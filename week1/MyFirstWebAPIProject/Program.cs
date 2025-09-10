@@ -1,4 +1,6 @@
 using System.Globalization;
+using Microsoft.AspNetCore.Builder.Extensions;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -154,17 +156,18 @@ app.Run();
 app.MapGet("/numbers/fizzbuzz/{count}", (int count) =>
 {
     var result = new List<string>();
-
     for (int i = 1; i <= count; i++)
     {
-        if (i % 15 == 0)
+        if (i % 3 == 0 && i % 5 == 0)
             result.Add("FizzBuzz");
         else if (i % 3 == 0)
             result.Add("Fizz");
         else if (i % 5 == 0)
             result.Add("Buzz");
-        else result.Add(i.ToString());
+        else
+            result.Add(i.ToString());
     }
+    return Results.Ok(new { count, result });
 });
 
 app.MapGet("/numbers/prime/{number}", (int num) =>
@@ -181,8 +184,99 @@ app.MapGet("/numbers/prime/{number}", (int num) =>
 
 app.MapGet("/numbers/fibonacci/{count}", (int count) =>
 {
-    
+    List<int> fib = new List<int>();
+    int a = 0, b = 1;
+    for (int i = 0; i < count; i++)
+    {
+        fib.Add(a);
+        int temp = a + b;
+        a = b;
+        b = temp;
+    }
+    return Results.Ok(new { count = count, sequence = fib });
 });
+
+app.MapGet("/numbers/factors/{number}", (int num) =>
+{
+    var factors = new List<int>();
+    for (int i = 1; i <= num; i++)
+    {
+        if (num % i == 0)
+            factors.Add(i);
+    }
+    return Results.Ok(new { num, factors });
+});
+
+//challenge 4: Date and Time Utilities
+app.MapGet("/date/today", () =>
+{
+    var today = DateTime.Today;
+    return Results.Ok(new
+    {
+        ISO = today.ToString("yyyy-MM-dd")
+
+    });
+});
+
+app.MapGet("/date/age/{birthYear}", (int birthYear) =>
+{
+    var currentYear = DateTime.Today.Year;
+    var age = currentYear - birthYear;
+    return Results.Ok(new { birthYear, age });
+});
+
+app.MapGet("/date/daysbetween/{date1}/{date2}", (DateTime date1, DateTime date2) =>
+{
+    var days = Math.Abs((date2 - date1).Days);
+    return Results.Ok(new { daysBetween = days });
+});
+
+app.MapGet("/date/weekday/{date}", (DateTime date) =>
+{
+    var weekDay = date.DayOfWeek.ToString();
+    return Results.Ok(new { weekDay });
+});
+
+//Challenge 5: Simple Collections
+List<string> colors = new() { "Red", "Blue", "Green", "Yellow", "Purple", "Orange" };
+
+app.MapGet("/colors", () =>
+{
+    return Results.Ok(new { colors });
+});
+
+app.MapGet("/colors/random", () =>
+{
+    var rand = new Random();
+    var color = colors[rand.Next(colors.Count)];
+    return Results.Ok(new { color });
+});
+
+app.MapGet("/colors/search/{letter}", (char letter) =>
+{
+    var match = colors.Where(c => c.StartsWith(letter.ToString(), StringComparison.OrdinalIgnoreCase)).ToList();
+    return Results.Ok(new { match });
+});
+
+app.MapPost("/colors/add/{color}", (string color) =>
+{
+    colors.Add(color);
+    return Results.Ok(new { colors });
+});
+
+//Challenge 6: Temperature Converter
+
+
+
+
+
+
+
+
+
+
+
+
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
