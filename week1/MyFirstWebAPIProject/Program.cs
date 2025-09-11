@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,12 +18,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
 //define a minimal API Endpoint for weather forecast. GET request to /weatherforecast
 //HTTP Request Types: GET, POST, PUT, DELETE, PATCH
@@ -45,29 +41,6 @@ headers
 Header
 Body
 
-*/
-
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-/*app.MapGet("/", () => "Hello World! Welcome to My First Web API Project");
-
-app.MapGet("/number", () =>
-{
-    return 67;
-});
 */
 
 //Challenge 1: Basic Calculator
@@ -141,16 +114,15 @@ app.MapGet("/text/count/{text}", (string text) =>
 
 app.MapGet("/text/palindrome/{text}", (string text) =>
 {
-    var clean = new string(text.ToArray()).ToLower();
-    var reverse = new string(clean.Reverse().ToArray());
-    bool isPalindrome = clean == reverse;
+    var reverse = new string(text.Reverse().ToArray());
+    bool isPalindrome = text == reverse;
+
     return Results.Ok(new
     {
         text,
         isPalindrome
     });
 });
-app.Run();
 
 //Challenge 3: Number Games
 app.MapGet("/numbers/fizzbuzz/{count}", (int count) =>
@@ -265,20 +237,132 @@ app.MapPost("/colors/add/{color}", (string color) =>
 });
 
 //Challenge 6: Temperature Converter
-
-
-
-
-
-
-
-
-
-
-
-
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+app.MapGet("/temp/celsius-to-fahrenheit/{temp}", (double temp) =>
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+    var fahrenheit = (temp * 9 / 5) + 32;
+    return Results.Ok(new { fahrenheit });
+});
+
+app.MapGet("/temp/fahrenheit-to-celsius/{temp}", (double temp) =>
+{
+    double celsius = (temp - 32) * 5 / 9;
+    return Results.Ok(new { celsius });
+});
+
+app.MapGet("/temp/kelvin-to-celsius/{temp}", (double temp) =>
+{
+    double result = temp - 273.15;
+    return Results.Ok(new { result });
+});
+
+app.MapGet("/temp/compare/{temp1}/{unit1}/{temp2}/{unit2}", (double temp1, string unit1, double temp2, string unit2) =>
+{
+    //helper function to convert any unit to celsius
+    double ToCelsius(double temp, string unit)
+    {
+        return unit.ToLower() switch
+        {
+            "c" => temp,
+            "f" => (temp - 32) * 5 / 9,
+            "k" => temp - 273.15,
+        };
+    }
+
+    double celsius1 = ToCelsius(temp1, unit1);
+    double celsius2 = ToCelsius(temp2, unit2);
+    string compare = celsius1 == celsius2 ? "equal" : (celsius1 > celsius2 ? "greater" : "less");
+    return Results.Ok(new
+    {
+        temp1 = $"{temp1} {unit1}",
+        temp2 = $"{temp2} {unit2}",
+        compare = $"Temparature 1 is {compare} than Temparature 2"
+    });
+});
+
+//Challenge 7: Password Generator
+app.MapGet("/password/simple/{length}", (int length) =>
+{
+    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    Random rand = new Random();
+    string password = "";
+
+    for (int i = 0; i < length; i++)
+    {
+        password += chars[rand.Next(chars.Length)];
+    }
+    return Results.Ok(new { password });    
+});
+
+app.MapGet("/password/complex/{length}", (int length) =>
+{
+    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    Random rand = new Random();
+    string password = "";
+
+    for (int i = 0; i < length; i++)
+    {
+        password += chars[rand.Next(chars.Length)];
+    }
+    return Results.Ok(new { password });
+});
+
+app.MapGet("/password/memorable/{words}", (int words) =>
+{
+    List<string> wordList = new List<string>
+    {
+        "blue", "hoop", "tree", "sun", "moon", "help", "code"
+    };
+
+    Random rand = new Random();
+    string password = "";
+    for (int i = 0; i < words; i++)
+    {
+        password += wordList[rand.Next(wordList.Count)];
+    }
+    return Results.Ok(new { password });
+});
+
+app.MapGet("/password/strength/{password}", (string password) =>
+{
+    if (password.Length < 8) return Results.Ok(new { strength = "weak" });
+    bool hasUpper = password.Any(char.IsUpper);
+    bool hasLower = password.Any(char.IsLower);
+    bool hasDigit = password.Any(char.IsDigit);
+    bool hasSpecial = password.Any(char.IsSymbol);
+    if (hasUpper && hasLower && hasDigit && hasSpecial)
+        return Results.Ok(new { strength = "strong" });
+    return Results.Ok(new { strength = "weak" });
+});
+
+//Challenge 8: Simple Validator
+app.MapGet("/validate/email/{email}", (string email) =>
+{
+    string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+    Regex regex = new Regex(pattern);
+    return regex.IsMatch(email);
+});
+
+app.MapGet("/validate/phone/{phone}", (string phone) =>
+{
+    string pattern = @"^\+?[1-9]\d{1,14}$";
+    Regex regex = new Regex(pattern);
+    return regex.IsMatch(phone);
+});
+
+app.MapGet("/validate/creditcard/{number}", (string num) =>
+{
+    string pattern = @"^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|6(?:011|5[0-9]{2})[0-9]{12}|(?:2131|1800|35\d{3})\d{11})$";
+    Regex regex = new Regex(pattern);
+    return regex.IsMatch(num);
+});
+
+app.MapGet("/validate/strongpassword/{password}", (string password) =>
+{
+    string pattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
+    Regex regex = new Regex(pattern);
+    return regex.IsMatch(password);
+});
+
+//Challenge 9: Unit Converter
+
+app.Run();
