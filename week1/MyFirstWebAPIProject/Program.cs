@@ -44,40 +44,50 @@ Body
 */
 
 //Challenge 1: Basic Calculator
-app.MapGet("/calculator/add/{a}/{b}", (int a, int b) =>
+app.MapGet("/calculator/add/{a}/{b}", (double a, double b) =>
 {
+    double result = a + b;
     return new
     {
         operation = "add",
-        result = a + b
+        input1 = a,
+        input2 = b,
+        result
     };
 });
 
-app.MapGet("/calculator/subtract/{a}/{b}", (int a, int b) =>
+app.MapGet("/calculator/subtract/{a}/{b}", (double a, double b) =>
 {
+    double result = a - b;
     return new
     {
         operation = "subtract",
-        result = a - b
+        input1 = a,
+        input2 = b,
+        result
     };
 });
 
-app.MapGet("/calculator/multiply/{a}/{b}", (int a, int b) =>
+app.MapGet("/calculator/multiply/{a}/{b}", (double a, double b) =>
 {
+    double result = a * b;
     return new
     {
         operation = "multiply",
-        result = a * b
+        input1 = a,
+        input2 = b,
+        result
     };
 });
 
 app.MapGet("/calculator/divide/{a}/{b}", (double a, double b) => 
 {
+    //handle division by zero
     if (b == 0)
         return Results.BadRequest(new { error = "Cannot divide by zero" });
     
-    var result = a / b;
-    return Results.Ok(new { operation = "divide", input1 = a, input2 = b, result = result });
+    double result = a / b;
+    return Results.Ok(new { operation = "divide", input1 = a, input2 = b, result });
 });
 
 //Challenge 2: String Manipulator
@@ -100,7 +110,9 @@ app.MapGet("/text/lowercase/{text}", (string text) =>
 app.MapGet("/text/count/{text}", (string text) =>
 {
     int charCount = text.Length;
+    //split by space and count words
     int wordCount = text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+    //count vowels
     int vowelCount = text.Count(c => "aeiouAEIOU".Contains(c));
 
     return Results.Ok(new
@@ -127,7 +139,8 @@ app.MapGet("/text/palindrome/{text}", (string text) =>
 //Challenge 3: Number Games
 app.MapGet("/numbers/fizzbuzz/{count}", (int count) =>
 {
-    var result = new List<string>();
+    List<string> result = new List<string>();
+    
     for (int i = 1; i <= count; i++)
     {
         if (i % 3 == 0 && i % 5 == 0)
@@ -146,6 +159,8 @@ app.MapGet("/numbers/prime/{number}", (int num) =>
 {
     if (num <= 1)
         return Results.Ok(new { number = num, isPrime = false });
+
+    //check for factors from 2 to sqrt(num)
     for (int i = 2; i * i <= num; i++)
     {
         if (num % i == 0)
@@ -160,17 +175,21 @@ app.MapGet("/numbers/fibonacci/{count}", (int count) =>
     int a = 0, b = 1;
     for (int i = 0; i < count; i++)
     {
-        fib.Add(a);
+        fib.Add(a); //add current number
+        //next fibonacci number
         int temp = a + b;
+        //update values
         a = b;
         b = temp;
     }
-    return Results.Ok(new { count = count, sequence = fib });
+    return Results.Ok(new { count, fib });
 });
 
 app.MapGet("/numbers/factors/{number}", (int num) =>
 {
-    var factors = new List<int>();
+    List<int> factors = new List<int>();
+
+    //find factors by checking divisibility from 1 to num
     for (int i = 1; i <= num; i++)
     {
         if (num % i == 0)
@@ -185,6 +204,7 @@ app.MapGet("/date/today", () =>
     var today = DateTime.Today;
     return Results.Ok(new
     {
+        day = today.Day,
         ISO = today.ToString("yyyy-MM-dd")
 
     });
@@ -226,6 +246,7 @@ app.MapGet("/colors/random", () =>
 
 app.MapGet("/colors/search/{letter}", (char letter) =>
 {
+    //case insensitive search for colors starting with the given letter
     var match = colors.Where(c => c.StartsWith(letter.ToString(), StringComparison.OrdinalIgnoreCase)).ToList();
     return Results.Ok(new { match });
 });
@@ -239,7 +260,7 @@ app.MapPost("/colors/add/{color}", (string color) =>
 //Challenge 6: Temperature Converter
 app.MapGet("/temp/celsius-to-fahrenheit/{temp}", (double temp) =>
 {
-    var fahrenheit = (temp * 9 / 5) + 32;
+    double fahrenheit = (temp * 9 / 5) + 32;
     return Results.Ok(new { fahrenheit });
 });
 
@@ -268,9 +289,13 @@ app.MapGet("/temp/compare/{temp1}/{unit1}/{temp2}/{unit2}", (double temp1, strin
         };
     }
 
+    //convert both temperatures to celsius
     double celsius1 = ToCelsius(temp1, unit1);
     double celsius2 = ToCelsius(temp2, unit2);
+
+    //compare the two
     string compare = celsius1 == celsius2 ? "equal" : (celsius1 > celsius2 ? "greater" : "less");
+
     return Results.Ok(new
     {
         temp1 = $"{temp1} {unit1}",
@@ -288,6 +313,7 @@ app.MapGet("/password/simple/{length}", (int length) =>
 
     for (int i = 0; i < length; i++)
     {
+        //within the chars string, get a random index and append that char to password
         password += chars[rand.Next(chars.Length)];
     }
     return Results.Ok(new { password });    
@@ -325,10 +351,14 @@ app.MapGet("/password/memorable/{words}", (int words) =>
 app.MapGet("/password/strength/{password}", (string password) =>
 {
     if (password.Length < 8) return Results.Ok(new { strength = "weak" });
+
+    //check for uppercase, lowercase, digit and special character
+    //Any() checks if any character in the string satisfies the condition
     bool hasUpper = password.Any(char.IsUpper);
     bool hasLower = password.Any(char.IsLower);
     bool hasDigit = password.Any(char.IsDigit);
     bool hasSpecial = password.Any(char.IsSymbol);
+
     if (hasUpper && hasLower && hasDigit && hasSpecial)
         return Results.Ok(new { strength = "strong" });
     return Results.Ok(new { strength = "weak" });
@@ -364,5 +394,21 @@ app.MapGet("/validate/strongpassword/{password}", (string password) =>
 });
 
 //Challenge 9: Unit Converter
-
+app.MapGet("/convert/length/{value}/{fromUnit}/{toUnit}", (double value, string fromUnit, string toUnit) =>
+{
+    /*switch (fromUnit.ToLower())
+    {
+        case "m":
+        case "meter":
+        case "M":
+            if (toUnit.ToLower() == "ft" || toUnit.ToLower() == "feet")
+            {
+                double val = value * 3.28084;
+                return Results.Ok(new { value, fromUnit, toUnit, val });
+            }
+            else 
+        default:
+            return Results.BadRequest(new { error = "Wrong Units!" });
+    }*/
+});
 app.Run();
