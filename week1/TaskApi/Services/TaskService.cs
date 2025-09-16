@@ -44,13 +44,15 @@ namespace TaskApi.Services
         //add Item
         public TaskItem Add(TaskItem newTask)
         {
+            int i = 0;
+            newTask.Id = i++;
             newTask.CreatedAt = DateTime.UtcNow;
-            newTask.UpdateAt = DateTime.UtcNow;
-            newTask.Add(newTask);
+            newTask.UpdatedAt = DateTime.UtcNow;
+            tasks.Add(newTask);
             return newTask;
         }
 
-        public TaskItem? Update(int id, TaskItem updatedTask)
+        public TaskItem Update(int id, TaskItem updatedTask)
         {
             var task = getById(id);
             task.Title = updatedTask.Title;
@@ -66,7 +68,7 @@ namespace TaskApi.Services
         public bool Delete(int id)
         {
             var task = getById(id);
-            task.Remove(task);
+            tasks.Remove(task);
             return true;
         }
     }
