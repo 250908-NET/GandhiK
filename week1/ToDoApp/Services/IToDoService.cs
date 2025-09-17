@@ -1,13 +1,11 @@
-using ToDoAPP.Models;
+using ToDoApp.Models;
+namespace ToDoApp.Services;
 
-namespace ToDoApp.Services
+public interface ItoDoService
 {
-    public interface ItoDoService
-    {
-        void addITem(string title);
-        List<ToDoItem> getAllItems();
-        bool MarkItemComplete(int id);
-        bool MarkItemIncomplete(int id);
-        bool DeleteItem(int id);
-    }
+    ToDoTask GetbyID(int id);
+    void addIItem(int id, string title);
+    bool MarkItemComplete(int id);
+    bool MarkItemIncomplete(int id);
+    bool DeleteItem(int id);
 }
