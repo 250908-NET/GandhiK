@@ -2,6 +2,9 @@ using TaskApi.Models;
 using TaskApi.Services;
 using Serilog;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,8 +50,31 @@ app.Use(async (HttpContext context, RequestDelegate next) =>
 
 //in-memory storage
 var taskService = new TaskService();
+var users = new List<User>();
 
 //------------------------------Endpoints-------------------------------
+
+//auth endpoints
+app.MapPost("/api/tasks/register", (User user) =>
+{
+    if (users.Any(u => u.Username == user.Username))
+    {
+        return Results.BadRequest(new
+        {
+            success = false,
+            errors = "Username already exists",
+            message = "Operation Failed"
+        });
+    }
+
+    users.Add(user);
+    return Results.Ok(new
+    {
+        success = true,
+        data = new { user.Id, user.Username },
+        message = "User registered successfully"
+    });
+});
 
 //GET /api/tasks - Get all tasks with optional filtering
 //Query parameters: isCompleted, priority, dueBefore
@@ -147,4 +173,5 @@ app.MapDelete("/api/tasks/delete/{id}", (int id, ILogger<Program> logger) =>
         message = "Operation completed successfully"
     });
 }).WithName("TaskDeleted");
+
 app.Run();

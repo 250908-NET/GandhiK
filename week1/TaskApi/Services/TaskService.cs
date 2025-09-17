@@ -52,7 +52,7 @@ namespace TaskApi.Services
             return newTask;
         }
 
-        public TaskItem Update(int id, TaskItem updatedTask)
+        public TaskItem? Update(int id, TaskItem updatedTask)
         {
             var task = getById(id);
             task.Title = updatedTask.Title;
