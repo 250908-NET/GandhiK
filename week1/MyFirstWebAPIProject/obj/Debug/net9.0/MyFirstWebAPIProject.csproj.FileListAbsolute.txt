@@ -30,3 +30,4 @@ C:\Users\kushg\Desktop\GandhiK\week1\MyFirstWebAPIProject\obj\Debug\net9.0\refin
 C:\Users\kushg\Desktop\GandhiK\week1\MyFirstWebAPIProject\obj\Debug\net9.0\MyFirstWebAPIProject.pdb
 C:\Users\kushg\Desktop\GandhiK\week1\MyFirstWebAPIProject\obj\Debug\net9.0\MyFirstWebAPIProject.genruntimeconfig.cache
 C:\Users\kushg\Desktop\GandhiK\week1\MyFirstWebAPIProject\obj\Debug\net9.0\ref\MyFirstWebAPIProject.dll
+C:\Users\kushg\Desktop\GandhiK\week1\MyFirstWebAPIProject\obj\Debug\net9.0\MyFirstWebAPIProject.sourcelink.json
