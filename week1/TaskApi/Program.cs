@@ -5,20 +5,29 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //-----------------Serilog-----------------
-Log.Logger = new LoggerConfiguration()
+/*Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger();
 
 builder.Host.UseSerilog();
-
-//----------------Swagger--------------------
+*/
+//----------------Swagger & Xml--------------------
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
+});
 
 var app = builder.Build();
 
@@ -29,8 +38,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+//--------------------Authentication & Authorization-------------------
 app.UseHttpsRedirection();
-
 //-------------------------Logging Middleware---------------------------
 app.Use(async (HttpContext context, RequestDelegate next) =>
 {
@@ -76,8 +85,34 @@ app.MapPost("/api/tasks/register", (User user) =>
     });
 });
 
-//GET /api/tasks - Get all tasks with optional filtering
-//Query parameters: isCompleted, priority, dueBefore
+app.MapPost("/api/auth/login", (User user) =>
+{
+    if (user == null)
+    {
+        return Results.BadRequest(new
+        {
+            success = false,
+            errors = "Invalid credentials",
+            message = "Login failed"
+        });
+    }
+
+    //var token = GenerateJwtToken(user);
+    return Results.Ok(new
+    {
+        success = true,
+        //token,
+        message = "Login successful"
+    });
+});
+
+/// <summary>
+/// get all tasks with optional filtering
+/// <summary>
+/// <param name="isCompleted">Filter by completion status</param>
+/// <param name="priority">Filter by priority (Low, Medium, High)</param>
+/// <param name="dueBefore">Filter tasks due before this date</param>
+/// <returns>List of takss</returns>
 app.MapGet("/api/tasks/getAll",  (bool? isCompleted, Priority? priority, DateTime? dueBefore, ILogger<Program> logger) =>
 {
     var tasks = taskService.GetAll(isCompleted, priority, dueBefore);
@@ -89,7 +124,11 @@ app.MapGet("/api/tasks/getAll",  (bool? isCompleted, Priority? priority, DateTim
     });
 }).WithName("GetAllTask");
 
-//GET /api/tasks/{id} - Get specific task by ID
+/// <summary>
+/// get all tasks by id
+/// <summary>
+/// <param name="id">unique id of task</param>
+/// <returns>List of tasks by id</returns>
 app.MapGet("/api/tasks/getById/{id}", (int id, ILogger<Program> logger) =>
 {
     var task = taskService.getById(id);
@@ -113,7 +152,11 @@ app.MapGet("/api/tasks/getById/{id}", (int id, ILogger<Program> logger) =>
     });
 }).WithName("GetTaskById");
 
-//POST /api/tasks - Create new task
+/// <summary>
+/// get all tasks by id
+/// <summary>
+/// <param name="newTask">object handle tasks details</param>
+/// <returns>auth of task creation</returns>
 app.MapPost("/api/tasks/create", (TaskItem newTask, ILogger<Program> logger) =>
 {
     if (string.IsNullOrWhiteSpace(newTask.Title))
@@ -139,7 +182,11 @@ app.MapPost("/api/tasks/create", (TaskItem newTask, ILogger<Program> logger) =>
     });
 }).WithName("TaskCreated");
 
-//PUT /api/tasks/{id} - Update existing task
+/// <summary>
+/// update task by id
+/// <summary>
+/// <param name="id">unique id of task</param>
+/// <returns>update task by id</returns>
 app.MapPut("/api/tasks/update/{id}", (int id, TaskItem updatedTask, ILogger<Program> logger) =>
 {
     var task = taskService.Update(id, updatedTask);
@@ -162,7 +209,11 @@ app.MapPut("/api/tasks/update/{id}", (int id, TaskItem updatedTask, ILogger<Prog
     });
 }).WithName("TaskUpdated");
 
-//DELETE /api/tasks/{id} - Delete task
+/// <summary>
+/// delete task by id
+/// <summary>
+/// <param name="id">unique id of task</param>
+/// <returns>deletion of task</returns>
 app.MapDelete("/api/tasks/delete/{id}", (int id, ILogger<Program> logger) =>
 {
     var delete = taskService.Delete(id);
