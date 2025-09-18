@@ -41,7 +41,7 @@ if (app.Environment.IsDevelopment())
 //--------------------Authentication & Authorization-------------------
 app.UseHttpsRedirection();
 //-------------------------Logging Middleware---------------------------
-app.Use(async (HttpContext context, RequestDelegate next) =>
+/*app.Use(async (HttpContext context, RequestDelegate next) =>
 {
     var corrleationId = Guid.NewGuid().ToString();
     context.Items["CorrelationId"] = corrleationId;
@@ -55,7 +55,7 @@ app.Use(async (HttpContext context, RequestDelegate next) =>
     Serilog.Log.Information("Status Code: ", statusCode);
     Serilog.Log.Information("Method: ", method);
     Serilog.Log.Information("Path: ", path);
-});
+});*/
 
 //in-memory storage
 var taskService = new TaskService();
@@ -113,7 +113,8 @@ app.MapPost("/api/auth/login", (User user) =>
 /// <param name="priority">Filter by priority (Low, Medium, High)</param>
 /// <param name="dueBefore">Filter tasks due before this date</param>
 /// <returns>List of takss</returns>
-app.MapGet("/api/tasks/getAll",  (bool? isCompleted, Priority? priority, DateTime? dueBefore, ILogger<Program> logger) =>
+app.MapGet("/api/tasks/getAll",  (bool? isCompleted, Priority? priority, DateTime? dueBefore,
+                                ILogger<Program> logger) =>
 {
     var tasks = taskService.GetAll(isCompleted, priority, dueBefore);
     return Results.Ok(new
@@ -187,7 +188,7 @@ app.MapPost("/api/tasks/create", (TaskItem newTask, ILogger<Program> logger) =>
 /// <summary>
 /// <param name="id">unique id of task</param>
 /// <returns>update task by id</returns>
-app.MapPut("/api/tasks/update/{id}", (int id, TaskItem updatedTask, ILogger<Program> logger) =>
+app.MapPut("/api/tasks/update/{id}", (int id, [FromBody] TaskItem updatedTask, ILogger<Program> logger) =>
 {
     var task = taskService.Update(id, updatedTask);
 
@@ -217,6 +218,17 @@ app.MapPut("/api/tasks/update/{id}", (int id, TaskItem updatedTask, ILogger<Prog
 app.MapDelete("/api/tasks/delete/{id}", (int id, ILogger<Program> logger) =>
 {
     var delete = taskService.Delete(id);
+
+    if (!delete) // task not found
+    {
+        return Results.NotFound(new
+        {
+            success = false,
+            errors = new[] { $"Task with id {id} not found" },
+            message = "Operation failed"
+        });
+    }
+    
     return Results.Ok(new
     {
         success = true,
