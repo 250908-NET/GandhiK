@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\kushg\\Desktop\\GandhiK\\week1\\MyFirstWebAPIProject\\MyFirstWebAPIProject.csproj": {}
+    "C:\\Users\\kushg\\OneDrive\\Desktop\\GandhiK\\week1\\MyFirstWebAPIProject\\MyFirstWebAPIProject.csproj": {}
   },
   "projects": {
-    "C:\\Users\\kushg\\Desktop\\GandhiK\\week1\\MyFirstWebAPIProject\\MyFirstWebAPIProject.csproj": {
+    "C:\\Users\\kushg\\OneDrive\\Desktop\\GandhiK\\week1\\MyFirstWebAPIProject\\MyFirstWebAPIProject.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\kushg\\Desktop\\GandhiK\\week1\\MyFirstWebAPIProject\\MyFirstWebAPIProject.csproj",
+        "projectUniqueName": "C:\\Users\\kushg\\OneDrive\\Desktop\\GandhiK\\week1\\MyFirstWebAPIProject\\MyFirstWebAPIProject.csproj",
         "projectName": "MyFirstWebAPIProject",
-        "projectPath": "C:\\Users\\kushg\\Desktop\\GandhiK\\week1\\MyFirstWebAPIProject\\MyFirstWebAPIProject.csproj",
+        "projectPath": "C:\\Users\\kushg\\OneDrive\\Desktop\\GandhiK\\week1\\MyFirstWebAPIProject\\MyFirstWebAPIProject.csproj",
         "packagesPath": "C:\\Users\\kushg\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\kushg\\Desktop\\GandhiK\\week1\\MyFirstWebAPIProject\\obj\\",
+        "outputPath": "C:\\Users\\kushg\\OneDrive\\Desktop\\GandhiK\\week1\\MyFirstWebAPIProject\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
