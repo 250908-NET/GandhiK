@@ -14,4 +14,4 @@ Minimal API for managing books and authors using ASP.NET Core and EF Core.
 ## Endpoints
 - `POST /books` -> add a book
 
-[Entity Relationship Diagram.pdf](https://github.com/user-attachments/files/22503502/Entity.Relationship.Diagram.pdf)
+<img width="913" height="645" alt="image" src="https://github.com/user-attachments/assets/d3e7f01e-1502-47b0-9033-7fde035cde69" />
