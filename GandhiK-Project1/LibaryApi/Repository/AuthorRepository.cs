@@ -1,6 +1,6 @@
-using LibraryApi.Data;
-using LibraryApi.Interfaces;
-using LibraryApi.Models;
+using LibaryApi.Data;
+using LibaryApi.Interfaces;
+using LibaryApi.Models;
 
 namespace LibaryApi.Repository;
 
