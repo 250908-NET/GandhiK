@@ -7,7 +7,7 @@ services:
     ports:
       - "1433:1433"
     environment:
-      SA_PASSWORD: "Passw0rd" # Must match appsettings.json
+      SA_PASSWORD: "StrongPass123!" # Must match appsettings.json
       ACCEPT_EULA: "Y"
     healthcheck:
       test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Passw0rd -Q 'SELECT 1'"]
