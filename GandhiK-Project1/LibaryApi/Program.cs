@@ -27,7 +27,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/", () => "Hello");
+app.MapPost("/authors", async (LibraryContext db, Author author) =>
+{
+    db.Authors.Add(author);
+    await db.SaveChangesAsync();
+    return Results.Created($"/authors/{author.Id}", author);
+});
+
 
 //--------------------------Books endpoints-------------------------------
 //get all books
