@@ -1,0 +1,33 @@
+ul {
+    border: solid green;
+}
+
+ul li {
+    border: dashed aqua;
+    margin: 5px;
+}
+
+body {
+    font-size: 3rem;
+}
+
+button {
+    font-size: 4rem;
+}
+
+button:hover {
+    color: blue;
+}
+
+img {
+    max-width: 30%;
+}
+
+h1 , h2, h3, h4, h5{
+    text-align: center;
+}
+
+#my-button {
+    display: flex;
+    justify-content:center;
+}
