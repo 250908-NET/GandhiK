@@ -1,11 +1,14 @@
-using LibaryApi.Data;
-using LibaryApi.Repositories;
-using LibaryApi.Interfaces;
-using LibaryApi.Models;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using LibaryApi.Data;
+using Microsoft.EntityFrameworkCore;
+using LibaryApi.Models;
+using LibaryApi.Repositories;
+using LibaryApi.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<LibraryContext>(options =>
@@ -65,7 +68,41 @@ app.MapPost("/authors", async (LibraryContext db, Author author) =>
     return Results.Created($"/authors/{author.Id}", author);
 });
 
+// =========================================================
+// 🧠 JWT LOGIN ENDPOINT
+// =========================================================
+app.MapPost("/login", (LoginRequest request, IConfiguration config) =>
+{
+    // Dummy authentication for testing
+    if (request.Username == "admin" && request.Password == "password123")
+    {
+        var jwtSettings = config.GetSection("Jwt");
+        var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, request.Username),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var creds = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: jwtSettings["Issuer"],
+            audience: jwtSettings["Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["DurationInMinutes"])),
+            signingCredentials: creds
+        );
+
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+        return Results.Ok(new { Token = tokenString });
+    }
+
+    return Results.Unauthorized();
+})
+.WithName("Login")
+.WithTags("Auth");
 //--------------------------Books endpoints-------------------------------
 //get all books
 app.MapGet("/books", async (LibraryContext db) =>
